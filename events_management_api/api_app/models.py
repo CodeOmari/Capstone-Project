@@ -27,6 +27,7 @@ class UserProfile(models.Model):
 
 class Event(models.Model):
     CATEGORY_CHOICES = [
+        ('', ''), 
         ('Tech', 'Tech'),
         ('Business', 'Business'),
         ('Social', 'Social'),
@@ -43,6 +44,7 @@ class Event(models.Model):
     event_location = models.CharField(max_length=100)
     virtual_location = models.URLField(blank=True, null=True, default='N/A')
     event_price = models.DecimalField(max_digits=6, decimal_places=2, default='Free')
+    event_capacity = models.IntegerField()
     event_organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='organizer_events')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
