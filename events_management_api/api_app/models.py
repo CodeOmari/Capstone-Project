@@ -1,19 +1,31 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
 
 # Create your models here.
 
-class UserProfile(models.Model):
+class UserProfile(AbstractUser):
     ROLE_CHOICES = [
         ('Organizer', 'Organizer'),
         ('Attendee', 'Attendee'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=100, choices=ROLE_CHOICES, default='Attendee')
-    phone_number = models.CharField(max_length=15, blank=False, null=False)
+    phone_number = models.CharField(max_length=15, blank=False, null=False, unique=True)
+
+
+    # Add unique related_name attributes to avoid conflicts
+    groups = models.ManyToManyField(
+        "auth.Group",
+        related_name="userprofile_set",  # Custom related_name to avoid clash
+        blank=True
+    )
+    user_permissions = models.ManyToManyField(
+        "auth.Permission",
+        related_name="userprofile_permissions_set",  # Custom related_name to avoid clash
+        blank=True
+    )
 
 
     def __str__(self):
@@ -45,7 +57,7 @@ class Event(models.Model):
     virtual_location = models.URLField(blank=True, null=True, default='N/A')
     event_price = models.DecimalField(max_digits=6, decimal_places=2, default='Free')
     event_capacity = models.IntegerField()
-    event_organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='organizer_events')
+    event_organizer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='organizer_events')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -61,7 +73,7 @@ class Event(models.Model):
 
 class Ticket(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_ticket')
-    attendee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='event_attendee')
+    attendee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='event_attendee')
     created_at = models.DateTimeField(auto_now_add=True)
 
 
