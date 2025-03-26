@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from .serializers import EventSerializer, UserProfileSerializer
 from .models import Event
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
 # Create your views here.
 class RegisterView(APIView):
@@ -36,3 +37,26 @@ class LoginView(APIView):
 class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    # Ensures only users with Organizer role can create events
+    def perform_create(self, serializer):
+        if user.request.user.role != 'Organizer':
+            raise PermissionDenied("Only Organizers can create events.")
+        serializer.save(event_organizer=self.request.user)
+
+    # Ensures Organizers can only update their own events
+    def perform_update(self, serializer):
+        event = self.get_object()
+        if event.event_organizer != self.request.user:
+            raise PermissionDenied("You can only update your own events.")
+        serializer.save()
+
+    
+    def perform_destroy(self, instance):
+        if instance.event_organizer != self.request.user:
+            raise PermissionDenied("You can only delete your own events")
+        instance.delete()
+
+
