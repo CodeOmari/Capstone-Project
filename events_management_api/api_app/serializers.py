@@ -1,37 +1,25 @@
 from rest_framework import serializers
-from .models import Event, Ticket, UserProfile
+from django.contrib.auth.models import User
+from .models import Event, Ticket
+from rest_framework.validators import UniqueValidator
+from django.contrib.auth.password_validation import validate_password
 from datetime import date
-from django.contrib.auth import get_user_model
-from rest_framework.authtoken.models import Token
 
-
-UserProfile = get_user_model() # Dynamically get custom user when using a custom model
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    password = serializers.CharField() # password won't be exposed and will be write-only
+class UserSerializer(serializers.ModelSerializer):
+    # ensures password is not exposed in API responses and is strong
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+    username = serializers.CharField(max_length=100, required=True, validators=[UniqueValidator(queryset=User.objects.all())])
+    email = serializers.CharField(required=True, validators=[UniqueValidator(queryset=User.objects.all())])
 
     class Meta:
-        model = UserProfile
-        fields = '__all__'
+        model = User
+        fields = ['username', 'email', 'password']
 
-    # Describes what will happen when a user registers
     def create(self, validated_data):
-
-        
-        user = get_user_model().objects.create_user(
-            username=validated_data['username'],
-            email=validated_data.get('email'),
-            password=validated_data['password'],
-            phone_number=validated_data.get('phone_number'),
-            role=validated_data.get('role'),
-        )
-        
-        # Ensure user is saved before creating a token
+        # Hash passwords before saving the user
+        user = User(username=validated_data['username'], email=validated_data['email'])
+        user.set_password(validated_data['password'])
         user.save()
-
-        # Check if a token already exists for this user
-        token, created = Token.objects.get_or_create(user=user)
-        
         return user
 
 
@@ -48,9 +36,6 @@ class EventSerializer(serializers.ModelSerializer):
         if value < date.today():
             raise serializers.ValidationError('Event date must be in the future')
         return value
-
-
-
 
 
 
