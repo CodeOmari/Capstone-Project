@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Event, Ticket
+from .models import Event, Registration
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from datetime import date
@@ -29,7 +29,7 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'update_at']
+        read_only_fields = ['id', 'created_at', 'update_at', 'organizer']
 
 
     def validate_event_date(self, value):
@@ -39,8 +39,8 @@ class EventSerializer(serializers.ModelSerializer):
 
 
 
-class TicketSerializer(serializers.ModelSerializer):
+class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Ticket
+        model = Registration
         fields = '__all__'
         read_only_fields = ['id', 'created_at']
