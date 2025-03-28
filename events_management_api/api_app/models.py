@@ -21,7 +21,7 @@ class Event(models.Model):
     event_time = models.TimeField()
     event_location = models.CharField(max_length=100)
     virtual_location = models.URLField(blank=True, null=True, default='N/A')
-    event_price = models.DecimalField(max_digits=6, decimal_places=2, default='Free')
+    event_price = models.DecimalField(max_digits=6, decimal_places=2, default='0.00')
     event_capacity = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
