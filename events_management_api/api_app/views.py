@@ -1,4 +1,4 @@
-from .serializers import EventSerializer
+from .serializers import EventSerializer, UserSerializer
 from .models import Event
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -40,6 +40,9 @@ class EventViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Event.objects.all()
     serializer_class = EventSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(organizer=self.request.user)
    
 
 
