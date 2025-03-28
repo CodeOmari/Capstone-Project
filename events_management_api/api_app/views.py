@@ -7,6 +7,8 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from django.contrib.auth import authenticate
+from django.db.models import Q
+from datetime import date, timedelta
  
 
 # Create your views here.
@@ -60,3 +62,47 @@ class EventViewSet(viewsets.ModelViewSet):
         if Event.objects.filter(organizer=user).exists():
             return Event.objects.filter(organizer=user)
         return Event.objects.all()
+
+
+
+
+class UpcomingEventViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = EventSerializer
+
+    def get_queryset(self):
+        today = date.today()
+        five_days_later = today + timedelta(days=5)
+
+        queryset = Event.objects.filter(event_date__range=(today, five_days_later))
+
+        title = self.request.query_params.get('title')
+        location = self.request.query_params.get('location')
+        category = self.request.query_params.get('category')
+
+        if title:
+            queryset = queryset.filter(event_title__icontains=title)
+        if location:
+            queryset = queryset.filter(Q(event_location__icontains=location) | Q(virtual_location__icontains=location))
+        if category:
+            queryset = queryset.filter(event_category__iexact=category)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        # If user is an organizer, show only their events
+        user = request.user
+        user_events = queryset.filter(organizer=user)
+
+        if user_events.exists():
+            serializer = self.get_serializer(user_events, many=True)
+            return Response(serializer.data)
+
+        if not queryset.exists():
+            return Response({"message": "No upcoming events within the next 5 days."}, status=200)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
