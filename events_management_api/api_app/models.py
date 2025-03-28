@@ -13,7 +13,7 @@ class Event(models.Model):
         ('Education', 'Education'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
+    organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
     event_title = models.CharField(max_length=100)
     event_category = models.CharField(max_length=100, choices=CATEGORY_CHOICES)
     event_description = models.TextField()
@@ -23,7 +23,6 @@ class Event(models.Model):
     virtual_location = models.URLField(blank=True, null=True, default='N/A')
     event_price = models.DecimalField(max_digits=6, decimal_places=2, default='Free')
     event_capacity = models.IntegerField()
-    event_organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='organizer_events')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -37,9 +36,9 @@ class Event(models.Model):
 
 
 
-class Ticket(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_ticket')
-    attendee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tickets')
+class Registration(models.Model):
+    attendee = models.ForeignKey(User, on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=15)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -51,3 +50,5 @@ class Ticket(models.Model):
     
     class Meta:
         db_table = 'Tickets'
+        # user can get one ticket for an event
+        unique_together = ('event', 'attendee')
