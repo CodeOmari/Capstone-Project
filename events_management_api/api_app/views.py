@@ -1,6 +1,6 @@
 from .serializers import EventSerializer, UserSerializer
 from .models import Event
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
@@ -34,10 +34,19 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({"message":"login successful", 'token':token.key}, status=status.HTTP_200_OK)
         return Response({"error":"incorrect username or password"}, status=status.HTTP_401_UNAUTHORIZED)
     
+class IsEventOrganizerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        # Read permissions for everyone (GET, HEAD, OPTIONS)
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # Write permissions only for the event organizer
+        return obj.organizer == request.user
+
 
 class EventViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsEventOrganizerOrReadOnly]
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 
