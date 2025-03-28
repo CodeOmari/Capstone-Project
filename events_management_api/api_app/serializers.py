@@ -25,6 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
+    organizer = serializers.CharField(source='organizer.username', read_only=True)
 
     class Meta:
         model = Event
