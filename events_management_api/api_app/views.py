@@ -53,5 +53,10 @@ class EventViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(organizer=self.request.user)
    
-
-
+    # organizers only see the events they own
+    # Other users can see all events
+    def get_queryset(self):
+        user = self.request.user
+        if Event.objects.filter(organizer=user).exists():
+            return Event.objects.filter(organizer=user)
+        return Event.objects.all()
