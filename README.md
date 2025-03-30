@@ -6,7 +6,7 @@ Refer to requirements.txt file on project requirements
 
 # Project Setup
 Clone the project and change directory to the projects folder. For example: cd CAPSTONE-PROJECT  
-Activate virtual environment: source venv/bin/activate  
+Activate virtual environment: `source venv/bin/activate`  
 Run the project by starting the server: python manage.py runserver
 
 # Usage
