@@ -2,6 +2,7 @@ from .serializers import EventSerializer, UserSerializer, RegistrationSerializer
 from .models import Event, Registration
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
+from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -112,38 +113,31 @@ class UpcomingEventViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 
-class RegistrationViewSet(viewsets.ModelViewSet):
-    serializer_class = RegistrationSerializer
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
 
-    def create(self, request, *args, **kwargs):
-        user = request.user
-        event_id = request.data.get("event")
-        phone_number = request.data.get("phone_number")
-        
-        if not event_id or not phone_number:
-            return Response({"error": "Event and phone number are required."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            event = Event.objects.get(id=event_id)
-        except Event.DoesNotExist:
-            return Response({"error": "Event not found."}, status=status.HTTP_404_NOT_FOUND)
-        
-        # Check if user has already registered for the event
-        if Registration.objects.filter(attendee=user, event=event).exists():
-            return Response({"error": "You have already registered for this event."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Check if phone number is unique
-        if Registration.objects.filter(phone_number=phone_number).exists():
-            return Response({"error": "Phone number already used."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        registration = Registration.objects.create(attendee=user, event=event, phone_number=phone_number)
-        serializer = self.get_serializer(registration)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+# Only ticket owners to update or delete their tickets
+class IsTicketOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.attendee == request.user
+
+
+class RegistrationViewSet(viewsets.ModelViewSet):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsTicketOwner]
+    serializer_class = RegistrationSerializer
+
+    def get_queryset(self):
+        return Registration.objects.filter(attendee=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(attendee=self.request.user)
+
+
+# To show list of attendees for an event
+class OrganizerAttendeesViewSet(viewsets.ReadOnlyModelViewSet):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = RegistrationSerializer
+
     def get_queryset(self):
         user = self.request.user
-        if hasattr(user, 'is_event_owner') and user.is_event_owner:
-            return Registration.objects.filter(event__owner=user)  # Show only registrations for events owned by the user
-        return Registration.objects.filter(attendee=user)
+        return Registration.objects.filter(event__organizer=user)
