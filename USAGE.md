@@ -15,8 +15,8 @@ NB: All urls start with /api/
         }
     ```
 - Response:
-    - STATUS 201 Created: user created successfully  
-    - STATUS 400 Bad Request: Validation errors
+    - `STATUS 201 Created`: user created successfully  
+    - `STATUS 400 Bad Request`: Validation errors
 
 ## POST /api/login/
 - Usage: Login registered users and return token
@@ -28,8 +28,8 @@ NB: All urls start with /api/
             }
     ```
 - Response:
-    - STATUS 200 OK: login successfull    
-    - STATUS 401 Bad Unauthorised: Invalid username or password
+    - `STATUS 200 OK`: login successfull    
+    - `STATUS 401 Bad Unauthorised`: Invalid username or password
 
 
 ## Users Endpoints
