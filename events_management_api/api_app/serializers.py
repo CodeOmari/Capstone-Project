@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from .models import Event, Registration
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
+from rest_framework.exceptions import ValidationError
 from datetime import date
 
 class UserSerializer(serializers.ModelSerializer):
@@ -40,8 +41,11 @@ class EventSerializer(serializers.ModelSerializer):
 
 
 
+
 class RegistrationSerializer(serializers.ModelSerializer):
+    attendee = serializers.ReadOnlyField(source='attendee.username', read_only=True)  
+    event = serializers.ReadOnlyField(source='event.event_title', read_only=True)  
+
     class Meta:
         model = Registration
-        fields = '__all__'
-        read_only_fields = ['id', 'created_at']
+        fields = "__all__"
