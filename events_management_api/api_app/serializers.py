@@ -43,9 +43,22 @@ class EventSerializer(serializers.ModelSerializer):
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    attendee = serializers.ReadOnlyField(source='attendee.username', read_only=True)  
-    event = serializers.ReadOnlyField(source='event.event_title', read_only=True)  
+    attendee = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    event_title = serializers.CharField(source='event.event_title', read_only=True)
 
     class Meta:
         model = Registration
-        fields = "__all__"
+        fields = ['id', 'attendee', 'event', 'event_title', 'phone_number', 'registered_at']
+        read_only_fields = ['id', 'registered_at']
+
+    def validate(self, data):
+        user = self.context['request'].user
+        event = data.get('event')
+
+        if Registration.objects.filter(attendee=user, event=event).exists():
+            raise serializers.ValidationError("You are already registered for this event.")
+
+        if event.organizer == user:
+            raise serializers.ValidationError("You cannot register for your own event.")
+
+        return data
