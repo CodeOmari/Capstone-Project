@@ -22,7 +22,7 @@ class Event(models.Model):
     event_location = models.CharField(max_length=100)
     virtual_location = models.URLField(blank=True, null=True, default='N/A')
     event_price = models.DecimalField(max_digits=6, decimal_places=2, default='0.00')
-    event_capacity = models.IntegerField()
+    event_slots = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -39,8 +39,8 @@ class Event(models.Model):
 class Registration(models.Model):
     attendee = models.ForeignKey(User, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    phone_number = models.CharField(max_length=15)
-    created_at = models.DateTimeField(auto_now_add=True)
+    phone_number = models.CharField(max_length=15, unique=True)
+    registered_at = models.DateTimeField(auto_now_add=True)
 
 
     def __str__(self):
