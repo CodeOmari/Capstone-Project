@@ -1,5 +1,5 @@
 # API Endpoints Documentation
-Hosted at:
+Hosted at: https://omari14.pythonanywhere.com/
 
 ## Authentication Endpoints
 NB: All urls start with /api/
