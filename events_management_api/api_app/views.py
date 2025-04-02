@@ -70,6 +70,8 @@ class EventViewSet(viewsets.ModelViewSet):
 
 
 
+
+
 class UpcomingEventViewSet(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
