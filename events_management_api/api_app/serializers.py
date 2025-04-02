@@ -44,12 +44,17 @@ class EventSerializer(serializers.ModelSerializer):
 
 class RegistrationSerializer(serializers.ModelSerializer):
     attendee = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    attendee_name = serializers.SerializerMethodField()
     event_title = serializers.CharField(source='event.event_title', read_only=True)
+
 
     class Meta:
         model = Registration
-        fields = ['id', 'attendee', 'event', 'event_title', 'phone_number', 'registered_at']
+        fields = ['id', 'attendee', 'attendee_name', 'event', 'event_title', 'phone_number', 'registered_at']
         read_only_fields = ['id', 'registered_at']
+
+    def get_attendee_name(self, obj):
+        return obj.attendee.username if obj.attendee else None
 
     def validate(self, data):
         user = self.context['request'].user
@@ -62,3 +67,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You cannot register for your own event.")
 
         return data
+
+
+
