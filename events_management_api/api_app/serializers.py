@@ -1,26 +1,27 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Event, Registration
-from rest_framework.validators import UniqueValidator
-from django.contrib.auth.password_validation import validate_password
-from rest_framework.exceptions import ValidationError
 from datetime import date
 
 class UserSerializer(serializers.ModelSerializer):
-    # ensures password is not exposed in API responses and is strong
-    password = serializers.CharField(write_only=True, validators=[validate_password])
-    username = serializers.CharField(max_length=100, required=True, validators=[UniqueValidator(queryset=User.objects.all())])
-    email = serializers.CharField(required=True, validators=[UniqueValidator(queryset=User.objects.all())])
+    password1 = serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True)
+    
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'password1', 'password2']
+
+    def validate(self, data):
+        if data['password1'] != data['password2']:
+            raise serializers.ValidationError('Passwords do not match.')
+        return data
 
     def create(self, validated_data):
-        # Hash passwords before saving the user
-        user = User(username=validated_data['username'], email=validated_data['email'])
-        user.set_password(validated_data['password'])
-        user.save()
+        user = User.objects.create_user(
+            username = validated_data['username'],
+            password = validated_data['password1']
+        )
         return user
 
 
