@@ -1,0 +1,1 @@
+web: gunicorn events_management_api.wsgi:application
