@@ -2,23 +2,23 @@
 Hosted at: https://omari14.pythonanywhere.com/
 
 ## Authentication Endpoints
-NB: All urls start with /api/
+NB: Append the following in your Postman
 
-## POST /api/register/
+## POST localhost:8000/register/
 - Usage: Register a new user
 - Request Body:
     ```json
         {
             "username": "Enter your username",
-            "email": "Enter your email",
-            "password": "Enter your password"
+            "password1": "Enter your password",
+            "password2": "Confirm your password"
         }
     ```
 - Response:
     - `STATUS 201 Created`: user created successfully  
     - `STATUS 400 Bad Request`: Validation errors
 
-## POST /api/login/
+## POST localhost:8000/login/
 - Usage: Login registered users and return token
 - Request Body:
     ```json
@@ -28,7 +28,7 @@ NB: All urls start with /api/
             }
     ```
 - Response:
-    - `STATUS 200 OK`: login successfull    
+    - `STATUS 200 OK`: login successfull, access and refresh tokens are provided   
     - `STATUS 401 Bad Unauthorised`: Invalid username or password
 
 
@@ -38,11 +38,11 @@ This endpoints allow CRUD operations on events and also registration for events
 ## POST /api/events/
 - Usage: Create new events for organizers
 - Requirements: 
-    Add the token displayed after login in the Headers tab in Postman
+    Add the access token displayed after login in the Headers tab in Postman
     ```json
             {
                 "key": "Authorization",  
-                "Value": "Token your_login_token"
+                "Value": "Bearer your_access_token"
             }
     ```
 - Request Body:
